@@ -1,25 +1,15 @@
-import { User } from "../model/User";
+import { User, UserProps } from "../model/User";
+import { View } from "./View";
 
-export class UserForm {
-    constructor(public parent: Element, public model: User){
-        this.bindModel();
-    }
-
-    bindModel(): void {
-        this.model.on('change', () => {
-            this.render();
-        });
-    }
+export class UserForm extends View<User, UserProps>{
 
     template(): string {
         return `
             <div>
-                <h1>User Form</h1>
-                <div> User Name ${this.model.get('name')}</div>
-                <div> User age ${this.model.get('age')}</div>
-                <input />
+                <input palceholder="${this.model.get('name')}"/>
                 <button class="set-name">Click Me</button>
                 <button class="set-age">Set Random Age</button>
+                <button class="save-model">Save User</button>
             </div>
         `;
     }
@@ -27,8 +17,13 @@ export class UserForm {
     eventsMap(): {[key: string]: () => void} {
         return {
             'click:.set-age': this.onSetAgeClick,
-            'click:.set-name': this.onSetNameClick
+            'click:.set-name': this.onSetNameClick,
+            'click:.save-model': this.onSaveClick
         }
+    }
+
+    onSaveClick = (): void =>  {
+        this.model.save();
     }
 
     onSetNameClick = () => {
@@ -48,25 +43,5 @@ export class UserForm {
         console.log('Button Clicked!');
     }
 
-    bindEvents(fragment: DocumentFragment): void{
-        const eventMap = this.eventsMap();
-
-        for (let eventKey in eventMap) {
-            const [eventName, selector] = eventKey.split(':');
-            fragment.querySelectorAll(selector).forEach(element => {
-                element.addEventListener(eventName, eventMap[eventKey])
-            })
-        }
-    }
-
-    render(): void{
-        this.parent.innerHTML = '';
-        const templateElement = document.createElement('template');
-        templateElement.innerHTML = this.template();
-
-        this.bindEvents(templateElement.content);
-
-        this.parent.append(templateElement.content);
-    }
 
 }
